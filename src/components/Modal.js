@@ -16,8 +16,8 @@ const Modal = ({ color, title, message, src, colorButton, labelButton, onClick, 
           gap="xxxsmall" 
           pad="xsmall"
         >
-          <Heading textAlign="center" color={color} level="3">{title}</Heading>
-          <Heading textAlign="center" level="4">{message}</Heading>
+          <Heading margin="xxsmall" textAlign="center" color={color} level="3">{title}</Heading>
+          <Heading margin="medium" textAlign="center" level="4">{message}</Heading>
           <Box>
             <Image src={src} />
           </Box>

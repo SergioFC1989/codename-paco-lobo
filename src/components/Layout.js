@@ -7,7 +7,7 @@ const Layout = ({ children, direction }) => (
     <Box
       direction={direction}
       align="center" 
-      margin="xsmall"
+      margin="xxxsmall"
       gap="small"
       flex={true}
       fill

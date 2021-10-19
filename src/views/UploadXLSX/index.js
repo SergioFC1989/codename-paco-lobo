@@ -5,21 +5,25 @@ import {
   FileInput, 
   Button, 
   Image, 
-  List,
-  Spinner,
-  Heading,
-  Layer,
+  Table,
+  TableRow,
+  TableHeader,
+  TableCell,
+  TableBody,
 } from 'grommet';
+
+import { Trash } from 'grommet-icons'
 
 import parserFileXLSX from './function'
 
 import Layout from '../../components/Layout';
 import SearchId from '../../components/SearchId';
 import Modal from '../../components/Modal';
-import Loading from '../../components/Loading';
 
+import Loading from '../../components/Loading';
 import Upload from '../../assets/Upload.png';
 import Search from '../../assets/Search.png';
+import Empty from '../../assets/Empty.png';
 import Completed from '../../assets/Completed.png';
 
 const UploadXLSX = () => {
@@ -54,24 +58,23 @@ const UploadXLSX = () => {
         })
         .catch(error=>console.log(error))
   };
+
   const handleInsertar = () => {
     if(inputId.length <= 0) return;
     findAndSetDataList(sheets, inputId)
     setLoading(true)
     setLoading(false)
     setInputId('')
-    console.log(dataList)
   };
 
   const findAndSetDataList = (sheet, id) => sheet.find(route => {
     let rowFound = route.find(row => row.id === id);
-    console.log(rowFound)
     if(rowFound) {
       setDataList(prevDataList => [...prevDataList, rowFound]);
       setModalFound(true)
       setTimeout(() => {
         setModalFound(false)
-      }, 1250);
+      }, 1200);
       return true
     }
   });
@@ -90,25 +93,25 @@ const UploadXLSX = () => {
           onClick={() => setModalErrorUpload(false)}
         />
       )}
-        {formUpload && (
+        {formUpload &&(
           <Box
             animation="fadeIn" 
             pad="small" 
             align="center" 
             width="medium" 
             gap="medium"
-            margin="small"
+            margin="xxsmall"
           >
-          <FileInput
-            messages={{
-              browse: ' ',
-              dropPrompt: 'Suba aquí, su archivo .xlsx',
-            }}
-            onChange={onChangeUpload}
-          />
-          <Box width="small" height="small">
-            <Image src={Upload} />
-          </Box>
+            <FileInput
+              messages={{
+                browse: ' ',
+                dropPrompt: 'Suba aquí, su archivo .xlsx',
+              }}
+              onChange={onChangeUpload}
+            />
+            <Box width="small" height="small">
+              <Image src={Upload} />
+            </Box>
             <Button 
               fill
               primary 
@@ -126,7 +129,7 @@ const UploadXLSX = () => {
             pad="small" 
             align="center" 
             gap="medium"
-            margin="small"
+            margin="xxsmall"
           >
           {modalFound && (
             <Modal 
@@ -159,17 +162,41 @@ const UploadXLSX = () => {
               align="center" 
               width="large"
             >
-              {loading && ( <Loading /> )}
-              <List
-                fill
-                primaryKey="id"
-                secondaryKey="address" 
-                pad="small"
-                alignSelf="center"
-                data={dataList}
-                border
-              />
-            </Box>
+              {dataList.length <= 0 
+                ?  
+                  (
+                    <Box animation="fadeIn" margin="xxxsmall" width="medium">
+                      <Image animation="fadeIn" src={Empty} />
+                    </Box>
+                  )
+                : 
+                  (
+                    <Box fill animation="fadeIn" align="center" justify="center" gap="small">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableCell scope="col" border="bottom">Id</TableCell>
+                            <TableCell scope="col" border="bottom">Dirección</TableCell>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {dataList.map(element => (
+                            <TableRow>
+                              <TableCell scope="row" border="bottom">{element.id}</TableCell>
+                              <TableCell scope="row" border="bottom">{element.address}</TableCell>
+                              <Button 
+                                icon={<Trash color="#F07F7F" />} 
+                                onClick={() => setDataList(currentDataList => currentDataList.filter(e => e !== element))}
+                              />
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </Box>
+                  )
+                }
+              </Box>
+            <Button fill primary label="Posicionar" onClick={() => console.log(dataList)} /> 
           </Box>
         )}
       </Layout>
