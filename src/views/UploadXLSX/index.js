@@ -1,49 +1,47 @@
 import React, {useState} from 'react'
-
+import { useRecoilState } from 'recoil';
 import { 
   Box, 
   FileInput, 
   Button, 
   Image, 
-  Table,
-  TableRow,
-  TableHeader,
-  TableCell,
-  TableBody,
 } from 'grommet';
 
-import { Trash } from 'grommet-icons'
-
 import parserFileXLSX from './function'
-
+import dataState from './atom'
 import Layout from '../../components/Layout';
 import SearchId from '../../components/SearchId';
 import Modal from '../../components/Modal';
+
+import { 
+  addNewDocumentFirestore, 
+  deleteAllCollectionFirestore
+} from '../../services/firestore';
 
 import Loading from '../../components/Loading';
 import Upload from '../../assets/Upload.png';
 import Search from '../../assets/Search.png';
 import Empty from '../../assets/Empty.png';
 import Completed from '../../assets/Completed.png';
+import TableList from '../../components/TableList';
+import Notification from '../../components/Notification';
 
 const UploadXLSX = () => {
   const [loading, setLoading] = useState(false);
   const [formUpload, setFormUpload] = useState(true);
   const [modalErrorUpload, setModalErrorUpload] = useState(false);
   const [modalFound, setModalFound] = useState(false);
+  const [notification, setNotification] = useState(false);
   const [fileUpload, setFileUpload] = useState();
   const [inputId, setInputId] = useState('');
   const [sheets, setSheets] = useState([]);
-  const [dataList, setDataList] = useState([])
+  const [dataList, setDataList] = useRecoilState(dataState)
 
   const onChangeUpload = event => {
     const fileList = event.target.files
     for (let i = 0; i < fileList.length; i ++) return setFileUpload(fileList[i]);
   };
 
-  // Vamos a parsear todas las hojas, y a saber el nombre de todas.
-  // Para el siguiente paso hacer un bucle, y crear un array de objetos con todo el archivo.xlsx
-  // Hacemos esto, para solo usar la libreria excel, una sola vez
   const parserSheetsXLSX = async () => {
       if(!fileUpload) return setModalErrorUpload(true)
       setLoading(true)
@@ -52,12 +50,14 @@ const UploadXLSX = () => {
       const data = sheetNames.map(async (name) => await parserFileXLSX.getSheet(name))
       Promise.all(data)
         .then(data => {
+          deleteAllCollectionFirestore('Ruta')
           setSheets(data)
           setFormUpload(false)
           setLoading(false)
         })
         .catch(error=>console.log(error))
   };
+
 
   const handleInsertar = () => {
     if(inputId.length <= 0) return;
@@ -79,20 +79,51 @@ const UploadXLSX = () => {
     }
   });
  
+  const addDocumentInFirestore = () => {
+    if(dataList.length <= 0) return;
+    addNewDocumentFirestore('Ruta', dataList)
+      .then(() => {
+        setDataList([])
+        setFormUpload(true)
+        setNotification(true)
+      })
+      .catch(error => console.log(error))
+  };
+
   return(
     <>
-      <Layout direction="column">
-      {modalErrorUpload && (
-        <Modal 
-          title="HEMOS DETECTADO UN ERROR"
-          color="#F07F7F"
-          message="Seleccione un archivo .xlsx"
-          colorButton="#F07F7F"
-          labelButton="Cerrar"
-          secondary
-          onClick={() => setModalErrorUpload(false)}
-        />
+      {notification && ( 
+        <Notification 
+          primary
+          position="center"
+          title="Enhorabuena"
+          message="Los datos se han agregado al mapa correctamente"
+          url="https://codename-paco-lobo.web.app/view_map_now"
+          labelButton="Aceptar"
+          onClick={() => setNotification(false)}
+        /> 
       )}
+      <Layout direction="column">
+        {modalErrorUpload && (
+          <Modal 
+            title="HEMOS DETECTADO UN ERROR"
+            color="#F07F7F"
+            message="Seleccione un archivo .xlsx"
+            colorButton="#F07F7F"
+            labelButton="Cerrar"
+            secondary
+            onClick={() => setModalErrorUpload(false)}
+          />
+        )}
+        {modalFound && (
+          <Modal 
+            position="top"
+            title="ENHORABUENA!"
+            color="brand"
+            message="Los datos se registraron correctamente"
+            src={Completed}
+          />
+        )}
         {formUpload &&(
           <Box
             animation="fadeIn" 
@@ -113,7 +144,7 @@ const UploadXLSX = () => {
               <Image src={Upload} />
             </Box>
             <Button 
-              fill
+              fill="horizontal"
               primary 
               label="Analizar" 
               size="large" 
@@ -131,14 +162,6 @@ const UploadXLSX = () => {
             gap="medium"
             margin="xxsmall"
           >
-          {modalFound && (
-            <Modal 
-              title="ENHORABUENA!"
-              color="brand"
-              message="Los datos se registraron correctamente"
-              src={Completed}
-            />
-          )}
             <Box 
               direction="column" 
               align="center" 
@@ -171,32 +194,21 @@ const UploadXLSX = () => {
                   )
                 : 
                   (
-                    <Box fill animation="fadeIn" align="center" justify="center" gap="small">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableCell scope="col" border="bottom">Id</TableCell>
-                            <TableCell scope="col" border="bottom">Dirección</TableCell>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {dataList.map(element => (
-                            <TableRow>
-                              <TableCell scope="row" border="bottom">{element.id}</TableCell>
-                              <TableCell scope="row" border="bottom">{element.address}</TableCell>
-                              <Button 
-                                icon={<Trash color="#F07F7F" />} 
-                                onClick={() => setDataList(currentDataList => currentDataList.filter(e => e !== element))}
-                              />
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                    <Box 
+                      fill 
+                      animation="fadeIn" 
+                      align="center" 
+                      justify="center" 
+                      gap="small"
+                    >
+                      <TableList header={["Id", "Dirección"]} state={dataState} />
                     </Box>
                   )
                 }
               </Box>
-            <Button fill primary label="Posicionar" onClick={() => console.log(dataList)} /> 
+            <Box width="medium">
+              <Button fill="horizontal" primary label="Posicionar" onClick={addDocumentInFirestore} /> 
+            </Box>
           </Box>
         )}
       </Layout>

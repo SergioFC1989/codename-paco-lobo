@@ -1,12 +1,15 @@
 import { Box, Button, Heading, Image, Layer } from 'grommet';
 import React from 'react'
 
-const Modal = ({ color, title, message, src, colorButton, labelButton, onClick, props  }) => {
+const Modal = ({ modal, plain, position, color, title, message, src, colorButton, labelButton, onClick, props  }) => {
   return(
     <>
       <Layer
         position="center"
         animate={true}
+        modal={modal}
+        plain={plain}
+        position={position}
       >
         <Box 
           flex 

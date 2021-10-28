@@ -5,12 +5,10 @@ import { Image, Box } from 'grommet';
 const Header = ({ src }) => (
   <>
     <Box 
-      responsive
       width="medium"
-      height="small"
+      height="medium"
       justify="center"
-      round="medium"
-      margin="xlarge"
+      margin="medium"
       animation="fadeIn"
     >
       <Image src={src} />

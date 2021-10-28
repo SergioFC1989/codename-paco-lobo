@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#5BE6AE" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000" />
     <meta
       name="SFC Develompent"
       content="App creada para Paco Lobo"
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>Router Map - SFC</title>
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      let elem = document.getElementById("root");
+      if(elem.requestFullscreen) elem.requestFullscreen();
+    </script>
   </body>
 </html>
